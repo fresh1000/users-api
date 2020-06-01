@@ -1,24 +1,24 @@
 import * as bcrypt from 'bcryptjs'
 import { Request, Response } from 'express'
-import { validationResult } from 'express-validator'
-import User from '../models/User'
+import { validationResult, Result } from 'express-validator'
+import User, { IUser } from '../models/User'
 import UserApiService from '../services/randomUserApiService'
 
 class UsersController {
   async allUsers(req: Request, res: Response) {
-    const users = await User.find({ removed: { $ne: true } })
+    const users: IUser[] = await User.find({ removed: { $ne: true } })
     return res.status(200).send({ users })
   }
 
   async deleteUser(req: Request, res: Response) {
-    const errors = validationResult(req)
+    const errors: Result = validationResult(req)
     if (!errors.isEmpty()) {
       return res.status(422).send({ errors: errors.array() })
     }
 
     const { userId } = req.params
     try {
-      const user = await User.findOneAndUpdate({ _id: userId }, { removed: true })
+      const user: IUser = await User.findOneAndUpdate({ _id: userId }, { removed: true })
       return res.status(200).send({ user })
     } catch (err) {
       return res.status(500).send({ err })
@@ -26,7 +26,7 @@ class UsersController {
   }
 
   async updateUser(req: Request, res: Response) {
-    const errors = validationResult(req)
+    const errors: Result = validationResult(req)
     if (!errors.isEmpty()) {
       return res.status(422).send({ errors: errors.array() })
     }
@@ -49,12 +49,12 @@ class UsersController {
   }
 
   async loginUser(req: Request, res: Response) {
-    const errors = validationResult(req)
+    const errors: Result = validationResult(req)
     if (!errors.isEmpty()) {
       return res.status(422).send({ errors: errors.array() })
     }
 
-    const user = await User.findOne({ email: req.body.email, removed: { $ne: true } })
+    const user: IUser = await User.findOne({ email: req.body.email, removed: { $ne: true } })
 
     if (!user) {
       return res.status(401).send('User not found')
@@ -79,7 +79,7 @@ class UsersController {
   async generate(req: Request, res: Response) {
     try {
       const randomUser = new UserApiService()
-      const userData = await randomUser.getUser()
+      const userData: IUser = await randomUser.getUser()
       const savedUser = new User(userData)
       savedUser.save()
       return res.status(200).send({ savedUser })
