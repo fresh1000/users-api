@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcryptjs'
 import { Request, Response } from 'express'
+import { validationResult } from 'express-validator'
 import User from '../models/User'
 import UserApiService from '../services/randomUserApiService'
 
@@ -10,6 +11,11 @@ class UsersController {
   }
 
   async deleteUser(req: Request, res: Response) {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(422).send({ errors: errors.array() })
+    }
+
     const { userId } = req.params
     try {
       const user = await User.findOneAndUpdate({ _id: userId }, { removed: true })
@@ -20,6 +26,11 @@ class UsersController {
   }
 
   async updateUser(req: Request, res: Response) {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(422).send({ errors: errors.array() })
+    }
+
     const { userId } = req.params
     const userData = {
       name: req.body.name,
@@ -38,6 +49,11 @@ class UsersController {
   }
 
   async loginUser(req: Request, res: Response) {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(422).send({ errors: errors.array() })
+    }
+
     const user = await User.findOne({ email: req.body.email, removed: { $ne: true } })
 
     if (!user) {
